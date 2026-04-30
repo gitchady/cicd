@@ -1,0 +1,68 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Linux server
+    runs-on: ubuntu-latest
+    if: vars.SERVER_DEPLOY_ENABLED == 'true' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+
+      - name: Write production env file
+        env:
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+          VITE_API_BASE_URL: /api
+          WEB_PORT: ${{ secrets.WEB_PORT }}
+        run: |
+          {
+            echo "POSTGRES_DB=${POSTGRES_DB:-cicd}"
+            echo "POSTGRES_USER=${POSTGRES_USER:-postgres}"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "SECRET_KEY=${SECRET_KEY}"
+            echo "CORS_ORIGINS=${CORS_ORIGINS:-http://localhost}"
+            echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}"
+            echo "WEB_PORT=${WEB_PORT:-80}"
+          } > .env.production
+
+      - name: Deploy with Docker Compose
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_APP_DIR: ${{ secrets.SERVER_APP_DIR }}
+        run: |
+          APP_DIR="${SERVER_APP_DIR:-/opt/cicd}"
+          SSH_TARGET="${SERVER_USER}@${SERVER_HOST}"
+
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "mkdir -p '$APP_DIR'"
+          scp -i ~/.ssh/deploy_key .env.production "$SSH_TARGET:$APP_DIR/.env.production"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "if [ ! -d '$APP_DIR/.git' ]; then git clone https://github.com/gitchady/cicd.git '$APP_DIR'; fi"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && git fetch origin main && git checkout main && git reset --hard origin/main"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && docker compose --env-file .env.production -f docker-compose.prod.yml ps"

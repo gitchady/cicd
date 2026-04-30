@@ -53,6 +53,21 @@ Frontend checks:
 
 ## Deploy
 
+Recommended for this repository now:
+
+- Personal Linux server over SSH
+- Docker Compose on the server
+- Frontend and backend on one IP
+
+See [Linux server deploy guide](docs/deploy-linux-server.md).
+
+Server URLs after deploy:
+
+```text
+http://SERVER_IP/       -> frontend
+http://SERVER_IP/api/*  -> backend
+```
+
 Frontend:
 
 - Platform: Vercel
