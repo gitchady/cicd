@@ -60,6 +60,22 @@ Frontend:
 - Build command: `npm run build`
 - Output directory: `dist`
 - Environment variable: `VITE_API_BASE_URL`
+- Project config: `apps/web/vercel.json`
+
+### Vercel frontend setup
+
+1. Open Vercel and import the GitHub repository.
+2. Select `gitchady/cicd`.
+3. Set the root directory to `apps/web`.
+4. Keep the build command as `npm run build`.
+5. Keep the output directory as `dist`.
+6. Add production environment variable:
+
+```text
+VITE_API_BASE_URL=https://your-backend-url
+```
+
+Every push to `main` will create a production deployment. Pull requests will create preview deployments.
 
 Backend:
 
