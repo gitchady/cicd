@@ -1,22 +1,22 @@
-# CI/CD FastAPI + Frontend Training Project Design
+# Дизайн учебного CI/CD проекта на FastAPI + Frontend
 
-## Goal
+## Цель
 
-Build a small full-stack project that exists mainly to test and understand a real CI/CD pipeline.
+Собрать небольшой full-stack проект, основная задача которого - протестировать и понять настоящий CI/CD pipeline.
 
-The project will use:
+Проект будет использовать:
 
 - FastAPI backend
 - React/Vite frontend
 - PostgreSQL database
-- GitHub Actions for CI
-- Vercel for frontend deployment
-- Render or Railway for backend deployment
-- Neon or Supabase for managed PostgreSQL
+- GitHub Actions для CI
+- Vercel для деплоя frontend
+- Render или Railway для деплоя backend
+- Neon или Supabase для managed PostgreSQL
 
-## Repository Shape
+## Структура репозитория
 
-The repository is a monorepo:
+Репозиторий будет monorepo:
 
 ```text
 apps/
@@ -28,69 +28,69 @@ docker-compose.yml
 README.md
 ```
 
-`apps/api` owns the FastAPI app, tests, database models, migrations, and Dockerfile.
+`apps/api` отвечает за FastAPI приложение, тесты, модели базы данных, миграции и Dockerfile.
 
-`apps/web` owns the frontend app, frontend tests, production build, and API client configuration.
+`apps/web` отвечает за frontend приложение, frontend тесты, production build и настройку API client.
 
-`.github/workflows` owns CI and deploy automation.
+`.github/workflows` отвечает за CI и deploy automation.
 
-## Application Scope
+## Scope приложения
 
-The app should stay intentionally small. A notes, tasks, or simple CRM-style app is enough.
+Приложение должно оставаться намеренно небольшим. Достаточно notes, tasks или простого CRM-style приложения.
 
-Minimum backend features:
+Минимальные backend функции:
 
 - `GET /health`
-- CRUD API for one resource
-- PostgreSQL connection
-- basic automated tests
+- CRUD API для одного ресурса
+- подключение к PostgreSQL
+- базовые автоматические тесты
 
-Minimum frontend features:
+Минимальные frontend функции:
 
-- list items from the API
-- create/edit/delete an item
-- show basic loading and error states
-- read API base URL from environment variables
+- показать список элементов из API
+- создать/редактировать/удалить элемент
+- показать базовые loading и error states
+- читать API base URL из environment variables
 
 ## CI Pipeline
 
-CI runs on pull requests and pushes to `main`.
+CI запускается на pull requests и push в `main`.
 
 Backend CI:
 
-- install Python dependencies
-- run Ruff
-- run Pytest
-- optionally run type checks after the base pipeline is stable
+- установить Python dependencies
+- запустить Ruff
+- запустить Pytest
+- опционально добавить type checks после стабилизации базового pipeline
 
 Frontend CI:
 
-- install Node dependencies
-- run lint/test if configured
-- run production build
+- установить Node dependencies
+- запустить lint/test, если они настроены
+- запустить production build
 
-The first implementation should keep CI strict enough to catch real regressions, but not overloaded with tools that distract from learning the pipeline.
+Первая реализация должна быть достаточно строгой, чтобы ловить реальные регрессии, но не перегруженной инструментами, которые будут отвлекать от изучения pipeline.
 
 ## Deployment Flow
 
 Frontend deployment:
 
-- Vercel is connected to the GitHub repository
-- `apps/web` is configured as the frontend root
-- pushes to `main` deploy production
-- pull requests create preview deployments
+- Vercel подключается к GitHub repository
+- `apps/web` настраивается как frontend root
+- push в `main` деплоит production
+- pull requests создают preview deployments
 
 Backend deployment:
 
-- Render or Railway is connected to the GitHub repository
-- backend deploys from `apps/api`
-- service uses either Dockerfile or a Python start command
-- production environment variables are configured in the platform dashboard
+- Render или Railway подключается к GitHub repository
+- backend деплоится из `apps/api`
+- service использует Dockerfile или Python start command
+- production environment variables настраиваются в dashboard платформы
 
 Database:
 
-- Neon or Supabase hosts PostgreSQL
-- backend receives `DATABASE_URL` from platform secrets
+- Neon или Supabase хостит PostgreSQL
+- backend получает `DATABASE_URL` из platform secrets
 
 ## Environment Variables
 
@@ -106,45 +106,45 @@ Frontend:
 
 Secrets must not be committed to the repository.
 
-## Codex Plugins And Skills
+## Codex Plugins и Skills
 
-Required Codex capabilities for this project are already available in the current Codex environment:
+Нужные Codex capabilities для этого проекта уже доступны в текущем Codex environment:
 
-- GitHub plugin: inspect PRs, checks, CI logs, and publish changes
-- Browser Use plugin: test local frontend flows in the in-app browser
-- Superpowers skills: planning, debugging, verification, and review workflow
-- Python and frontend skills: implementation guidance for FastAPI and React/Vite
+- GitHub plugin: смотреть PR, checks, CI logs и публиковать изменения
+- Browser Use plugin: тестировать локальные frontend flows в in-app browser
+- Superpowers skills: planning, debugging, verification и review workflow
+- Python и frontend skills: помощь с реализацией FastAPI и React/Vite
 
-No extra Codex plugin installation is required before implementation.
+Дополнительная установка Codex plugins перед реализацией не требуется.
 
 ## Testing Strategy
 
-Start with focused tests:
+Начинаем с focused tests:
 
-- backend unit/API tests around health and CRUD endpoints
-- database tests can use SQLite or a test PostgreSQL container depending on complexity
-- frontend smoke/build test first, then component tests for important UI flows
+- backend unit/API tests для health и CRUD endpoints
+- database tests могут использовать SQLite или test PostgreSQL container, в зависимости от сложности
+- frontend сначала проверяется через smoke/build test, затем добавляются component tests для важных UI flows
 
 Deployment smoke checks:
 
-- backend `/health` returns OK after deployment
-- frontend loads and can reach the deployed API
+- backend `/health` возвращает OK после deployment
+- frontend загружается и может достучаться до deployed API
 
 ## Error Handling
 
-Backend should return consistent JSON errors for validation and not-found cases.
+Backend должен возвращать consistent JSON errors для validation и not-found cases.
 
-Frontend should show clear loading and error states for API failures.
+Frontend должен показывать понятные loading и error states при API failures.
 
-CI failures should be treated as part of the learning goal: inspect logs, identify the failing step, patch, push again.
+CI failures считаются частью учебной цели: смотрим logs, находим failing step, исправляем, снова push.
 
-## Out Of Scope Initially
+## Что не делаем на первом этапе
 
 - Kubernetes
-- complex auth
+- сложную авторизацию
 - payments
 - multi-environment infrastructure as code
 - production-grade observability
-- custom domain setup
+- настройку custom domain
 
-These can be added later after the basic pipeline is understood.
+Это можно добавить позже, после того как базовый pipeline станет понятен.
