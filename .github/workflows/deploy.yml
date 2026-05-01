@@ -24,10 +24,10 @@ jobs:
       - name: Configure SSH
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_SSH_KEY_B64: ${{ secrets.SERVER_SSH_KEY_B64 }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s' "$SERVER_SSH_KEY_B64" | base64 -d > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
 

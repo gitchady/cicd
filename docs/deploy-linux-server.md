@@ -53,7 +53,13 @@ chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-Приватный ключ `cicd_deploy_key` добавь в GitHub Secrets как `SERVER_SSH_KEY`.
+Приватный ключ `cicd_deploy_key` закодируй в base64 и добавь в GitHub Secrets как `SERVER_SSH_KEY_B64`.
+
+PowerShell:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.ssh\cicd_deploy_key"))
+```
 
 ## GitHub Secrets
 
@@ -69,7 +75,7 @@ Repository -> Settings -> Secrets and variables -> Actions -> New repository sec
 SERVER_HOST=твой_ip
 SERVER_USER=root
 SERVER_APP_DIR=/opt/cicd
-SERVER_SSH_KEY=приватный_ssh_ключ
+SERVER_SSH_KEY_B64=base64_от_приватного_ssh_ключа
 POSTGRES_DB=cicd
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=длинный_пароль
