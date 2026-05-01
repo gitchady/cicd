@@ -58,11 +58,12 @@ jobs:
           SERVER_APP_DIR: ${{ secrets.SERVER_APP_DIR }}
         run: |
           APP_DIR="${SERVER_APP_DIR:-/opt/cicd}"
+          APP_PARENT="$(dirname "$APP_DIR")"
           SSH_TARGET="${SERVER_USER}@${SERVER_HOST}"
 
-          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "mkdir -p '$APP_DIR'"
-          scp -i ~/.ssh/deploy_key .env.production "$SSH_TARGET:$APP_DIR/.env.production"
-          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "if [ ! -d '$APP_DIR/.git' ]; then git clone https://github.com/gitchady/cicd.git '$APP_DIR'; fi"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "mkdir -p '$APP_PARENT'"
+          ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "if [ ! -d '$APP_DIR/.git' ]; then rm -rf '$APP_DIR' && git clone https://github.com/gitchady/cicd.git '$APP_DIR'; fi"
           ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && git fetch origin main && git checkout main && git reset --hard origin/main"
+          scp -i ~/.ssh/deploy_key .env.production "$SSH_TARGET:$APP_DIR/.env.production"
           ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && docker compose --env-file .env.production -f docker-compose.prod.yml up --build -d"
           ssh -i ~/.ssh/deploy_key "$SSH_TARGET" "cd '$APP_DIR' && docker compose --env-file .env.production -f docker-compose.prod.yml ps"
