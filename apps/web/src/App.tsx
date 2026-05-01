@@ -83,9 +83,34 @@ export default function App() {
     <main className="app-shell">
       <section className="workspace">
         <header className="page-header">
-          <p>CI/CD demo</p>
-          <h1>Notes pipeline</h1>
+          <div className="header-copy">
+            <p className="eyebrow">CI/CD demo</p>
+            <h1>Notes pipeline</h1>
+            <p className="header-summary">
+              A small live app that moves from GitHub Actions to Docker Compose on Ubuntu.
+            </p>
+          </div>
+          <div className="deploy-card" aria-label="Deployment status">
+            <span className="status-pill">Live deploy</span>
+            <strong>GitHub Actions -&gt; Docker -&gt; Ubuntu</strong>
+            <span>Production: 141.105.67.239</span>
+          </div>
         </header>
+
+        <section className="pipeline-strip" aria-label="CI/CD pipeline steps">
+          <div>
+            <span>01</span>
+            <strong>Test</strong>
+          </div>
+          <div>
+            <span>02</span>
+            <strong>Build</strong>
+          </div>
+          <div>
+            <span>03</span>
+            <strong>Deploy</strong>
+          </div>
+        </section>
 
         <form className="note-form" onSubmit={handleSubmit}>
           <h2>{editingNote ? "Редактировать note" : "Новая note"}</h2>

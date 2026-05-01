@@ -32,6 +32,9 @@ describe("App", () => {
   it("renders notes from the API", async () => {
     render(<App />);
 
+    expect(screen.getByText("Live deploy")).toBeInTheDocument();
+    expect(screen.getByText("GitHub Actions -> Docker -> Ubuntu")).toBeInTheDocument();
+
     await waitFor(() => expect(screen.getByText("Deploy backend")).toBeInTheDocument());
     expect(screen.getByText("Check /health")).toBeInTheDocument();
   });
